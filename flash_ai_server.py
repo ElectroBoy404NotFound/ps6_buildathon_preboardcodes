@@ -1,83 +1,37 @@
-import ffmpeg
+# Imports
 import sys
-from scipy.io import wavfile
-import numpy as np
 import time
 
+# More imports
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.VideoClip import TextClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
+# Most imports
 from faster_whisper import WhisperModel
-
-import sqlite3
-
 import hashlib
 
+# Mostest imports
 from flask import Flask, send_file, g
+
+# Mosterest import
+from database_utils import db_init, get_db, get_sha_file, add_entry
+from audio_utils import extract_audio
+
+# Create the flask app
 app = Flask(__name__)
 
+# Initiate an instance of the Speech to Text model
 model = WhisperModel("small")
 
-with sqlite3.connect("db/subtitled_files.db") as conn:
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS files (
-            sha256 TEXT PRIMARY KEY,
-            filename TEXT NOT NULL
-        )
-    """)
+db_init()
 
-def get_db():
-    if "db" not in g:
-        g.db = sqlite3.connect(
-            "db/subtitled_files.db",
-            check_same_thread=False
-        )
-    return g.db
-
-def get_sha_file(sha256):
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("SELECT filename FROM files WHERE sha256 = ?", (sha256,))
-    row = cur.fetchone()
-
-    if row:
-        print("Exists, filename:", row[0])
-        return row[0]
-    else:
-        print("Not found")
-        return None
-
-def add_entry(sha256, filename):
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute(
-        "INSERT OR IGNORE INTO files (sha256, filename) VALUES (?, ?)",
-        (sha256, filename)
-    )
-
-    conn.commit()
-
-def extract_audio(video_file: str, audio_output_file: str):
-    (
-        ffmpeg
-        .input(video_file)
-        .output(
-            audio_output_file,
-            **{"q:a": 0, "vn": None}
-        )
-        .run(overwrite_output=True)
-    )
-    print(f"Audio extracted to {audio_output_file}")
-
+# TODO Document this function
 @app.route("/transcribe/<file>")
 def transcribe(file):
     print(f"Subtitling file {file}")
     
-    with open(f"../{file}", "rb") as f:
+    with open(f"originals/{file}", "rb") as f:
         file_hash = hashlib.sha256(f.read()).hexdigest()
 
     existing_file_name = get_sha_file(file_hash)
@@ -86,8 +40,8 @@ def transcribe(file):
         return send_file(existing_file_name, as_attachment=True)
 
     ts = time.time()
-    extract_audio(f"../{file}", f"extracted/{ts}.wav")
-    video = VideoFileClip(f"../{file}")
+    extract_audio(f"originals/{file}", f"extracted/{ts}.wav")
+    video = VideoFileClip(f"originals/{file}")
 
     segments, info = model.transcribe(f"extracted/{ts}.wav", word_timestamps=True)
 
@@ -118,11 +72,16 @@ def transcribe(file):
 
     return send_file(f"subtitled/{file}.subtitled.mp4", as_attachment=True)
 
+# Clean up function
 @app.teardown_appcontext
 def close_db(exception):
+    # Get the database instance
     db = g.pop("db", None)
+
+    # If it exists, close it
     if db is not None:
         db.close()
 
+# Main function
 if __name__ == "__main__":
     app.run(debug=True)
