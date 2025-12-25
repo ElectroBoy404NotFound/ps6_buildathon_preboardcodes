@@ -11,3 +11,8 @@
 *.mp4
 *.wav
 # ^^^ These two lines are the lines that kinda protects me for now
+
+# Here literally the next day to add the DB folder in
+# Not afraid of copyright for that, just don't want a random
+# sqlite3 database full of video sha256s just lying around
+db/subtitled_files.db
