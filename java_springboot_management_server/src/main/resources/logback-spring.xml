@@ -1,0 +1,27 @@
+<configuration>
+    <property name="LOG_PATH" value="logs"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/application-%d{yyyy-MM-dd-HH-mm}.log</fileNamePattern>
+            <maxHistory>10</maxHistory> <!-- Keeps only the last 10 log files -->
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger: Logs to both console and file -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>  <!-- Print to console -->
+        <appender-ref ref="FILE"/>     <!-- Save to log file -->
+    </root>
+</configuration>
