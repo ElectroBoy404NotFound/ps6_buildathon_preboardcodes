@@ -10,9 +10,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import me.electronicsboy.titly.data.PrivilegeLevel;
-import me.electronicsboy.titly.dtos.rest.RegisterUserDto;
+import me.electronicsboy.titly.dtos.RegisterUserDto;
 import me.electronicsboy.titly.models.User;
 import me.electronicsboy.titly.repositories.UserRepository;
+import me.electronicsboy.titly.services.EmailService;
 import me.electronicsboy.titly.services.UserAuthenticationService;
 
 @Component
@@ -23,6 +24,8 @@ public class StartupRunner implements CommandLineRunner {
     private UserRepository userRepository;
 	@Autowired
     private UserAuthenticationService authService;
+	@Autowired
+	private EmailService emailService;
 	
 	private final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!";
     private final int PASSWORD_LENGTH = 12; // Change as needed
@@ -56,50 +59,23 @@ public class StartupRunner implements CommandLineRunner {
         newuser.setEnabled(true);
         userRepository.save(newuser);
         
-        LOGGER.info("Created user 'chmscmsadminuser' with email 'chmscmsadminuser@localhost.local' and with password '%s'".formatted(password));
-	}
-    
-    private void makeGuestUser() {
-		RegisterUserDto rud = new RegisterUserDto();
-		rud.setFullname("Guest");
-		rud.setUsername("guest");
-		rud.setEmail("guest@localhost.local");
-		rud.setLocation("None");
-//		rud.setPrivilegeLevel(PrivilegeLevel.CMSADMIN);
-		
-		String password = "guest123123";
-		
-		rud.setPassword(password);
-        User newuser = authService.signup(rud);
-        newuser.setPrivilageLevel(PrivilegeLevel.GUEST);
-        newuser.setEnabled(true);
-        userRepository.save(newuser);
+        emailService.sendSimpleEmail(adminEmail, "Account Created", "Hi %s,\r\nAn account with username <b>'%s'</b> and password <b>'%s'</b> has been created with <b>%s</b> privilages.\r\nUse this info to login.".formatted(newuser.getFullname(), newuser.getUsername(), password, newuser.getPrivilegeLevel().toString()));
         
-        LOGGER.info("Created user 'guest' with email 'guest@localhost.local' and with password '%s'".formatted(password));
+        LOGGER.info("Created user 'chmscmsadminuser' with email '%s' and with password '%s'".formatted(adminEmail, password));
 	}
-    
     
 	@Override
 	public void run(String... args) throws Exception {	
-		boolean admin = false, guest = false;
+		boolean admin = false;
 		for(User u : userRepository.findAll()) {
     		if(u.getPrivilegeLevel() == PrivilegeLevel.CMSADMIN) {
-    			LOGGER.info("An owner (%s) already exists, not creating a new user...".formatted(u.getUsername()));
+    			LOGGER.info("A CMSADMIN (%s) already exists, not creating a new user...".formatted(u.getUsername()));
     			admin = true;
-    			break;
-    		}
-    	}
-		for(User u : userRepository.findAll()) {
-    		if(u.getPrivilegeLevel() == PrivilegeLevel.GUEST) {
-    			LOGGER.info("An guest (%s) already exists, not creating a new user...".formatted(u.getUsername()));
-    			guest = true;
     			break;
     		}
     	}
 		
 		if(!admin)
 			makeAdminUser();
-		if(!guest)
-			makeGuestUser();
     }
 }

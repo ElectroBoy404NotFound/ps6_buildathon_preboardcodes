@@ -6,8 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import me.electronicsboy.titly.data.PrivilegeLevel;
-import me.electronicsboy.titly.dtos.rest.LoginUserDto;
-import me.electronicsboy.titly.dtos.rest.RegisterUserDto;
+import me.electronicsboy.titly.dtos.LoginUserDto;
+import me.electronicsboy.titly.dtos.RegisterUserDto;
 import me.electronicsboy.titly.models.User;
 import me.electronicsboy.titly.repositories.UserRepository;
 

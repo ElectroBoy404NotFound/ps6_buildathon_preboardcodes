@@ -25,3 +25,14 @@ db/subtitled_files.db
 __pycache__
 # I'm expecting to be back soon to add java related stuff too
 # But for now there's no java here
+
+# Ok ya, no java was added as the java folder itself had the
+# gitignore file with everything. But I'm here to add one last folder
+.vscode
+# ^ this is on the 28th of December btw
+# And I won't be here for a very long while after this
+# Why?
+# 1) I have exams and got no extra time
+# 2) I have no other frameworks to add
+# So yes, goodbye!
+# Hope we meet again :)

@@ -7,20 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import me.electronicsboy.titly.models.FileObject;
+import me.electronicsboy.titly.models.User;
 
 @Repository
 public interface FileObjectRepository extends JpaRepository<FileObject, Long> {
-	boolean existsByFilepath(String filepath);	
 	boolean existsByFilename(String filename);
-	boolean existsByGrade(String grade);
-	boolean existsByTeacher(String teacher);
-	boolean existsBySubject(String subject);
-	boolean existsByTerm(String term);
+	boolean existsByUser(User user);
 	
-	Optional<FileObject> findByFilepath(String filepath);
 	Optional<List<FileObject>> findByFilename(String filename);
-	Optional<List<FileObject>> findByGrade(String grade);
-	Optional<List<FileObject>> findByTeacher(String teacher);
-	Optional<List<FileObject>> findBySubject(String subject);
-	Optional<List<FileObject>> findByTerm(String term);
+	Optional<List<FileObject>> findByUser(User user);
 }
