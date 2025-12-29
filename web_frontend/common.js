@@ -31,7 +31,7 @@ const APIENDPOINT_DELETEUSER = `${protocol}//${hostname}:${serverport}/admin/use
 const APIENDPOINT_VIDEOPLAYBACK = `${protocol}//${hostname}:${serverport}/files/video/`;
 const APIENDPOINT_GETFILE = `${protocol}//${hostname}:${serverport}/files/getFile/`;
 const APIENDPOINT_DELETEFILE = `${protocol}//${hostname}:${serverport}/admin/files/delete/`;
-const APIENDPOINT_UPLOADFILE = `${protocol}//${hostname}:${serverport}/admin/files/upload`;
+const APIENDPOINT_UPLOADFILE = `${protocol}//${hostname}:${serverport}/files/upload`;
 
 const privilage_level_dict = {
     NONE: 0,

@@ -1,35 +1,28 @@
 package me.electronicsboy.titly.controllers;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import me.electronicsboy.titly.data.FileType;
-import me.electronicsboy.titly.data.PrivilegeLevel;
-import me.electronicsboy.titly.exceptions.FileNotFoundException;
-import me.electronicsboy.titly.exceptions.InvalidFileException;
-import me.electronicsboy.titly.exceptions.UnprivilagedExpection;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import me.electronicsboy.titly.models.FileObject;
 import me.electronicsboy.titly.models.User;
 import me.electronicsboy.titly.repositories.FileObjectRepository;
@@ -69,12 +62,7 @@ public class UserFileController {
 //    @PostMapping("/upload")
 //    public ResponseEntity<FileObject> uploadFile(
 //        @RequestParam("file") MultipartFile file,
-//        @RequestParam String grade,
-//        @RequestParam String subject,
-//        @RequestParam String filename,
-//        @RequestParam(required = false) String term,
-//        @RequestParam(required = false) String teacher,
-//        @RequestParam FileType fileType
+//        @RequestParam String filename
 //    ) {
 //    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //		User currentUser = (User) authentication.getPrincipal();
@@ -88,4 +76,55 @@ public class UserFileController {
 //        	throw new RuntimeException(e);
 //        }
 //    }
+    
+    // Shameless copy-paste from ChatGPT
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam String filename
+    ) {
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    	User currentUser = (User) authentication.getPrincipal();
+        try {
+            // 1. Create headers for multipart/form-data
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            // 2. Wrap the file into a Resource
+            ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename(); // Important, Python backend expects 'filename'
+                }
+            };
+
+            // 3. Build the multipart body
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", fileAsResource);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            // 4. Send POST request to Python backend
+            RestTemplate restTemplate = new RestTemplate();
+            String pythonUrl = "http://192.168.1.14:5000/upload_file"; // adjust port if needed
+            ResponseEntity<String> response = restTemplate.postForEntity(pythonUrl, requestEntity, String.class);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(response.getBody());
+            
+            String rbody = response.getBody();
+            System.out.println(rbody);
+            
+            fileObjectRepository.save(new FileObject(filename, currentUser, jsonNode.get("digest").asText()));
+            
+            // 5. Forward Python response
+            return ResponseEntity.status(response.getStatusCode()).body(rbody);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("{\"error\": \"Something went wrong!\"}");
+        }
+    }
+
 }

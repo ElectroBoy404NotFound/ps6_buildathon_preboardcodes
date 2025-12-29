@@ -1,18 +1,5 @@
-async function sidebar_adminonManageFilesList() {
-    loadPagetoElementInstant("adminmanagefiles_list", "dashboard_content__", true, false, true);
-}
-async function sidebar_adminonManageFilesUpload() {
-    loadPagetoElementInstant("adminmanagefiles_upload", "dashboard_content__", true, false, true);
-}
-async function sidebar_adminonManageUsersApproveClick() {
-    loadPagetoElementInstant("adminmanageusers_approve", "dashboard_content__", true, false, true);
-}
-async function sidebar_adminonManageUsersListClick() {
-    loadPagetoElementInstant("adminmanageusers_users", "dashboard_content__", true, false, true);
-}
-
-async function sidebar_onViewFilesClicked() {
-    loadPagetoElementInstant("filesview_list", "dashboard_content__", true, false, true);
+async function sidebar_onUploadFileClick() {
+    loadPagetoElementInstant("uploadfile", "dashboard_content__", true, false, true);
 }
 
 async function navbar_logoutUser() {

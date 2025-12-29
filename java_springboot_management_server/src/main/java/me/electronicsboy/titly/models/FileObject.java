@@ -12,6 +12,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
@@ -29,15 +31,16 @@ public class FileObject {
 	@Column(nullable = false)
     private String filename;
 	
-	@Column(nullable = false)
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "files_user_id", nullable = false)
     private User user;
 	
 	@Column(nullable = false)
     private String hash;
 	
-	@Column
+	@Column(nullable = true, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean transcribed = false;
-    
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
@@ -52,6 +55,7 @@ public class FileObject {
 		this.filename = filename;
 		this.user = user;
 		this.hash = hash;
+		this.transcribed = false;
 	}
 
 	public long getId() {
