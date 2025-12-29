@@ -15,15 +15,11 @@
         dataTable.row.add([
             file.id,
             file.name,
-            hall.location,
-            hall.description,
-            hall.enabled ? "Enabled" : "Disabled",
-            `<button onclick="editHallCMSLIST(${hall.id})" title="Edit Hall" class="btn btn-sm btn-sm-circle btn-success m-2">
-                <i class="fa fa-edit"></i>
-            </button>
-            <button onclick="deleteHallCMSLIST(${hall.id})" class="btn btn-sm btn-sm-circle btn-danger m-2">
-                <i class="fa fa-times-circle"></i>
-            </button>`
+            file.transcribed ? "Done" : "In progress",
+            file.transcribed ?
+            `<button onclick="editHallCMSLIST(${hall.id})" title="Download" class="btn btn-sm btn-sm-circle btn-success m-2">
+                <i class="fa fa-down"></i>
+            </button>`:""
         ]).draw(false);
     }
 })();

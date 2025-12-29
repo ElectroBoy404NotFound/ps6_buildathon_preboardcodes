@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +23,10 @@ import me.electronicsboy.titly.dtos.ResetPasswordDto;
 import me.electronicsboy.titly.exceptions.InvalidRefreshTokenException;
 import me.electronicsboy.titly.exceptions.LogoutJWTTokenMismatchException;
 import me.electronicsboy.titly.exceptions.LogoutRefreshTokenMismatchException;
+import me.electronicsboy.titly.models.FileObject;
 import me.electronicsboy.titly.models.RefreshToken;
 import me.electronicsboy.titly.models.User;
+import me.electronicsboy.titly.repositories.FileObjectRepository;
 import me.electronicsboy.titly.repositories.RefreshTokenRepository;
 import me.electronicsboy.titly.repositories.UserRepository;
 import me.electronicsboy.titly.responses.JWTInfoResponse;
@@ -50,6 +53,8 @@ public class UserAuthenticationController {
     
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private FileObjectRepository fileObjectRepository;
 
     public UserAuthenticationController(JwtService jwtService, UserAuthenticationService authenticationService, RefreshTokenService refreshTokenService, UserRepository userRepository, EmailService emailService, PasswordResetService otpService, InvalidatedJWTService jwtInvalidationService) {
         this.jwtService = jwtService;
@@ -128,5 +133,15 @@ public class UserAuthenticationController {
     @PostMapping("/resetPassword")
     public ResponseEntity<User> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
         return ResponseEntity.ok(otpService.validateOTP(resetPasswordDto.getEmail(), resetPasswordDto.getOtp(), resetPasswordDto.getNewpassword()));
+    }
+    
+    @GetMapping("/donesubtitling")
+    public ResponseEntity<OkResponse> donesubtitling(@PathVariable String hash) {
+    	fileObjectRepository.findByHash(hash).orElseThrow().forEach((e) -> {
+    		emailService.sendSimpleEmail(e.getUser().getEmail(), "File generated!", "your file %s has finished subtitling!".formatted(e.getFilename()));
+    		e.setTranscribed(true);
+    		fileObjectRepository.save(e);
+    	});
+        return ResponseEntity.ok(new OkResponse("Okie"));
     }
 }

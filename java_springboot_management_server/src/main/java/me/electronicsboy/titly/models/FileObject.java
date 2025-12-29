@@ -34,6 +34,9 @@ public class FileObject {
 	
 	@Column(nullable = false)
     private String hash;
+	
+	@Column
+    private boolean transcribed = false;
     
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -97,5 +100,13 @@ public class FileObject {
 	
 	public void setHash(String hash) {
 		this.hash = hash;
+	}
+
+	public boolean isTranscribed() {
+		return transcribed;
+	}
+
+	public void setTranscribed(boolean transcribed) {
+		this.transcribed = transcribed;
 	}
 }

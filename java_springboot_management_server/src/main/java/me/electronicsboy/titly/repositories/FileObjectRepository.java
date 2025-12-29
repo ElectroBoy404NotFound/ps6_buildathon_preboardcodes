@@ -16,4 +16,5 @@ public interface FileObjectRepository extends JpaRepository<FileObject, Long> {
 	
 	Optional<List<FileObject>> findByFilename(String filename);
 	Optional<List<FileObject>> findByUser(User user);
+	Optional<List<FileObject>> findByHash(String hash);
 }
