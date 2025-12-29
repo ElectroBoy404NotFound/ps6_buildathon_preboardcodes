@@ -10,12 +10,13 @@
         return;
     }
 
-    for(var i in files) {
-        const file = files[i];
+    for(var i in files_data) {
+        const file = files_data[i];
         dataTable.row.add([
             file.id,
-            file.name,
+            file.filename,
             file.transcribed ? "Done" : "In progress",
+            file.createdAt,
             file.transcribed ?
             `<button onclick="editHallCMSLIST(${hall.id})" title="Download" class="btn btn-sm btn-sm-circle btn-success m-2">
                 <i class="fa fa-down"></i>
