@@ -1,10 +1,14 @@
 package me.electronicsboy.titly.controllers;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +17,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.electronicsboy.titly.exceptions.InvalidActionException;
+import me.electronicsboy.titly.exceptions.UnprivilagedExpection;
 import me.electronicsboy.titly.models.FileObject;
 import me.electronicsboy.titly.models.User;
 import me.electronicsboy.titly.repositories.FileObjectRepository;
@@ -45,19 +53,49 @@ public class UserFileController {
     	return ResponseEntity.ok(fileObjects);
     }
     
-//    @GetMapping("/getFile/{id}")
-//    public ResponseEntity<Resource> getFile(@PathVariable long id) throws MalformedURLException {
-//    	FileObject object = fileObjectRepository.findById(id).orElseThrow();
-//    	Path filePath = Paths.get(object.getFilepath()).normalize();
-//    	Resource resource = new UrlResource(filePath.toUri());
-//
-//        // Return file as attachment
-//        return ResponseEntity.ok()
+    @GetMapping("/getFile/{hash}")
+    public ResponseEntity<Resource> getFile(@PathVariable String hash) throws MalformedURLException {
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User currentUser = (User) authentication.getPrincipal();
+    	
+    	List<FileObject> filesObjects = fileObjectRepository.findByHash(hash).orElseThrow();
+    	
+    	for(FileObject file : filesObjects) {
+    		if(file.getUser().getId() == currentUser.getId()) {
+    			if(file.isTranscribed()) {
+    				RestTemplate restTemplate = new RestTemplate();
+
+    			    ResponseEntity<Resource> pythonResponse =
+    			            restTemplate.exchange(
+    			                    "http://192.168.1.14:5000/download_file/" + hash,
+    			                    HttpMethod.GET,
+    			                    null,
+    			                    Resource.class
+    			            );
+
+    			    Resource resource = pythonResponse.getBody();
+
+    			    return ResponseEntity.ok()
+    			            .contentType(pythonResponse.getHeaders().getContentType())
+    			            .header(
+    			                HttpHeaders.CONTENT_DISPOSITION,
+    			                pythonResponse.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION)
+    			            )
+    			            .body(resource);
+    			} else 
+    				throw new InvalidActionException("This file hasn't been transcribed yet!");
+    		}
+    	}
+    	
+    	throw new UnprivilagedExpection("You cannot access this file!");
+    	
+        // Return file as attachment
+//        return ResponseEntity.ok();
 //                .contentType(MediaType.APPLICATION_OCTET_STREAM)
 //                .header(HttpHeaders.CONTENT_DISPOSITION,
 //                        "attachment; filename=\"" + resource.getFilename() + "\"")
 //                .body(resource);
-//    }
+    }
 //    
 //    @PostMapping("/upload")
 //    public ResponseEntity<FileObject> uploadFile(

@@ -26,8 +26,8 @@
             return;
         }
 
-        loadPagetoElementInstant("dashboard", "dashboard_content__", true, true, true, () => {
-            showTimedAlert(`File "${response.filename}" added successfully with id ${response.id}`, 3000);
+        loadPagetoElementInstant("dashboard_ui", "dashboard_content__", true, true, true, () => {
+            showTimedAlert(`File "${response.filename}" added successfully with id ${response.id}<br>You'll receive an email once the subtitling is finished`, 3000);
         });
     });
 })();

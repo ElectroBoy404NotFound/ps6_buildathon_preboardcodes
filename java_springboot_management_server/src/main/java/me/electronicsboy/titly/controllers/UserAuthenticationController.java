@@ -135,12 +135,14 @@ public class UserAuthenticationController {
         return ResponseEntity.ok(otpService.validateOTP(resetPasswordDto.getEmail(), resetPasswordDto.getOtp(), resetPasswordDto.getNewpassword()));
     }
     
-    @GetMapping("/donesubtitling")
+    @GetMapping("/donesubtitling/{hash}")
     public ResponseEntity<OkResponse> donesubtitling(@PathVariable String hash) {
     	fileObjectRepository.findByHash(hash).orElseThrow().forEach((e) -> {
-    		emailService.sendSimpleEmail(e.getUser().getEmail(), "File generated!", "your file %s has finished subtitling!".formatted(e.getFilename()));
-    		e.setTranscribed(true);
-    		fileObjectRepository.save(e);
+    		if(!e.isTranscribed()) {
+	    		emailService.sendSimpleEmail(e.getUser().getEmail(), "File generated!", "your file %s has finished subtitling!".formatted(e.getFilename()));
+	    		e.setTranscribed(true);
+	    		fileObjectRepository.save(e);
+    		}
     	});
         return ResponseEntity.ok(new OkResponse("Okie"));
     }

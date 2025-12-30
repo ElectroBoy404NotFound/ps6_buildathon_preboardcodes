@@ -2,6 +2,7 @@
 import sys
 import time
 import os
+import threading
 
 # More imports
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -11,13 +12,14 @@ from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 # Most imports
 from faster_whisper import WhisperModel
 import hashlib
+import requests
 
 # Mostest imports
 from flask import Flask, send_file, g, jsonify, request
 from werkzeug.utils import secure_filename
 
 # Mosterest import
-from database_utils import db_init, get_db, get_sha_file, add_entry
+from database_utils import db_init, get_sha_file, add_entry
 from audio_utils import extract_audio
 
 # Create the flask app
@@ -29,11 +31,11 @@ model = WhisperModel("small")
 
 db_init()
 
+subtitle_status_report_url = "http://192.168.1.12:8087/userauth/donesubtitling/"
+
 # TODO Document this function
 # TODO Replace file path from string manipulation to os.path
-# TODO Use secure_filename to ensure safe filename
 # TODO Remove the above TODOs :)
-@app.route("/transcribe/<file>")
 def transcribe(file):
     print(f"Subtitling file {file}")
     
@@ -42,8 +44,14 @@ def transcribe(file):
 
     existing_file_name = get_sha_file(file_hash)
     if existing_file_name:
-        print(f"File alredy subtitled! {file}")
-        return send_file(existing_file_name, as_attachment=True)
+        print(f"File already subtitled! {file}")
+        response = requests.get(
+            subtitle_status_report_url + file_hash,
+            timeout=5
+        )
+
+        print("Status:", response.status_code)
+        return None
 
     ts = time.time()
     extract_audio(f"originals/{file}", f"extracted/{ts}.wav")
@@ -74,9 +82,20 @@ def transcribe(file):
     final = CompositeVideoClip([video] + text_clips)
     final.write_videofile(f"subtitled/{file}.subtitled.mp4", codec="libx264", audio_codec="aac")
 
+    response = requests.get(
+        subtitle_status_report_url + file_hash,
+        timeout=5
+    )
+
+    print("Status:", response.status_code)
+
     add_entry(file_hash, f"subtitled/{file}.subtitled.mp4")
 
-    return send_file(f"subtitled/{file}.subtitled.mp4", as_attachment=True)
+# Download file endpoint
+@app.route('/download_file/<file>', methods=['GET'])
+def download_file(file):
+    filename = get_sha_file(file)
+    return send_file(filename, as_attachment=True)
 
 # Upload file endpoint
 @app.route('/upload_file', methods=['POST'])
@@ -107,6 +126,7 @@ def upload_file():
         return jsonify({
             "success": "File already exists and subtitled :)",
             "code": 0,
+            "digest": digest,
             "filename": existing_file.removesuffix(".subtitled.mp4")
         })
 
@@ -115,21 +135,20 @@ def upload_file():
     filepath = os.path.join("originals", filename)
     file.save(filepath)
 
+    # Start transcribing on that file
+    thread = threading.Thread(
+        target=transcribe,
+        args=(filename,),
+        daemon=True  # dies when main program exits
+    )
+    thread.start()
+
     return jsonify({
-        "success": "File uploaded :)",
+        "success": "File uploaded, started transcribing in another thread :)",
         "code": 0,
+        "digest": digest,
         "filename": filename
     })
-
-# Clean up function
-@app.teardown_appcontext
-def close_db(exception):
-    # Get the database instance
-    db = g.pop("db", None)
-
-    # If it exists, close it
-    if db is not None:
-        db.close()
 
 # Main function
 if __name__ == "__main__":

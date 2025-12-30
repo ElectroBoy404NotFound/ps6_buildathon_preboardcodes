@@ -1,3 +1,23 @@
+async function downloadFile(name, hash) {
+    const res = await fetch(APIENDPOINT_DOWNLOADFILES + hash, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("usertoken")}`
+        }
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name + ".mp4";
+    document.body.appendChild(a);
+    a.click();
+
+    URL.revokeObjectURL(url);
+    a.remove();
+}
+
 (async function() {
     const table = document.getElementById("files_list_table");
     const dataTable = new DataTable(table);
@@ -18,8 +38,8 @@
             file.transcribed ? "Done" : "In progress",
             file.createdAt,
             file.transcribed ?
-            `<button onclick="editHallCMSLIST(${hall.id})" title="Download" class="btn btn-sm btn-sm-circle btn-success m-2">
-                <i class="fa fa-down"></i>
+            `<button onclick="downloadFile('${file.filename}', '${file.hash}')" title="Download" class="btn btn-sm btn-sm-circle btn-success m-2">
+                <i class="fa fa-download"></i>
             </button>`:""
         ]).draw(false);
     }

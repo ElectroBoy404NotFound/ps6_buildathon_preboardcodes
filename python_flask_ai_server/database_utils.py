@@ -1,56 +1,64 @@
-# Imports
-import sqlite3
-from flask import g
+import mysql.connector
+from mysql.connector import Error
 
-# Ensure all the tables (subtitled files) exist
+# MySQL credentials
+DB_CONFIG = {
+    "host": "localhost",
+    "user": "titly",
+    "password": "Titly_2025@",
+    "database": "titly"
+}
+
+conn = None
+cursor = None
+
 def db_init():
-    with sqlite3.connect("db/subtitled_files.db") as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS files (
-                sha256 TEXT PRIMARY KEY,
-                filename TEXT NOT NULL
+    """Initialize the database table if it doesn't exist."""
+    global conn, cursor
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS subtitled_files (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                file_path VARCHAR(1024) NOT NULL,
+                sha256_hash CHAR(64) NOT NULL UNIQUE
             )
         """)
+        conn.commit()
+    except Error as e:
+        print(f"Error initializing DB: {e}")
 
-# Get the DB instance
-def get_db():
-    # Create a DB instance if the instance doesn't exist
-    if "db" not in g:
-        g.db = sqlite3.connect(
-            "db/subtitled_files.db",
-            check_same_thread=False
+def add_entry(sha256_hash, file_path):
+    """Add a file path and its SHA256 hash to the database."""
+    global conn, cursor
+    if not conn or not cursor:
+        print("Database not initialized.")
+        return
+    try:
+        cursor.execute(
+            "INSERT INTO subtitled_files (file_path, sha256_hash) VALUES (%s, %s)",
+            (file_path, sha256_hash)
         )
-    return g.db
+        conn.commit()
+    except Error as e:
+        print(f"Error adding entry: {e}")
 
-# Function to get the file name belonging to a subtitled file from the sha256 if it exists
-# If the entry isn't found, it returns None
-def get_sha_file(sha256):
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("SELECT filename FROM files WHERE sha256 = ?", (sha256,))
-    row = cur.fetchone()
-
-    if row:
-        # SHA256 entry exists
-        print("Exists, filename:", row[0])
-        return row[0]
-    else:
-        # SHA256 entry doesn't exist
-        print("Not found")
+def get_sha_file(sha256_hash):
+    """Return the file path for a given SHA256 hash, or None if not found."""
+    global cursor
+    if not cursor:
+        print("Database not initialized.")
         return None
-
-# Function to add a file entry into the database with its sha256 and filename
-def add_entry(sha256, filename):
-    conn = get_db()     # Get the DB instance
-    cur = conn.cursor() # Get the pointer
-
-    # Execute the query to INSERT an entry into the DB
-    cur.execute(
-        "INSERT OR IGNORE INTO files (sha256, filename) VALUES (?, ?)",
-        (sha256, filename)
-    )
-
-    # Write changes to the DB file
-    conn.commit()
+    result = None
+    try:
+        cursor.execute(
+            "SELECT file_path FROM subtitled_files WHERE sha256_hash=%s",
+            (sha256_hash,)
+        )
+        row = cursor.fetchone()
+        if row:
+            result = row[0]
+    except Error as e:
+        print(f"Error fetching SHA: {e}")
+    return result

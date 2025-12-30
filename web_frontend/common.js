@@ -19,6 +19,7 @@ const APIENDPOINT_PRIVILAGELEVEL = `${protocol}//${hostname}:${serverport}/info/
 const APIENDPOINT_SELFUSER = `${protocol}//${hostname}:${serverport}/info/users/me`;
 
 const APIENDPOINT_LISTFILES = `${protocol}//${hostname}:${serverport}/files/listFiles`;
+const APIENDPOINT_DOWNLOADFILES = `${protocol}//${hostname}:${serverport}/files/getFile/`;
 
 const APIENDPOINT_USERINFOBYID = `${protocol}//${hostname}:${serverport}/info/users/getById/`;
 const APIENDPOINT_USERINFOUPDATE = `${protocol}//${hostname}:${serverport}/update/user/update`;

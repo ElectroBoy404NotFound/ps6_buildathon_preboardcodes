@@ -1,0 +1,37 @@
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
+<div class="container my-5">
+    <h3>Edit User</h3>
+    <form id="editUserForm">
+        <div class="mb-3">
+            <label for="userUsername" class="form-label">Username</label>
+            <input type="text" class="form-control" id="userUsername" name="username" required readonly>
+        </div>
+
+        <div class="mb-3">
+            <label for="userEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="userEmail" name="email" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="userLocation" class="form-label">Location</label>
+            <input type="text" class="form-control" id="userLocation" name="location" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="userRole" class="form-label">Role</label>
+            <select class="form-select" id="userRole" name="role" required>
+                <option value="GUEST">Booker</option>
+                <option value="ADMIN">Admin</option>
+                <option value="CMSADMIN">CMS Admin</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="resetPassword" class="form-label">Reset Password</label>
+            <input type="password" class="form-control" id="resetPassword" name="password" placeholder="Leave blank to keep unchanged">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update User</button>
+    </form>
+</div>
