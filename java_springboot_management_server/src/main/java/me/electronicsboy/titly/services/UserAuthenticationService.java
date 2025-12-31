@@ -35,7 +35,7 @@ public class UserAuthenticationService {
                 .setEmail(input.getEmail())
                 .setUsername(input.getUsername())
                 .setPrivilageLevel(PrivilegeLevel.GUEST)
-                .setEnabled(false)
+                .setEnabled(true)
                 .setPassword(passwordEncoder.encode(input.getPassword()))
                 .setLocation(input.getLocation());
 
