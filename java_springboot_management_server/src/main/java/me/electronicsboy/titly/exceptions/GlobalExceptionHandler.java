@@ -255,39 +255,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    @ExceptionHandler(InvalidFileException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleInvalidFileException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                ErrorCode.INVALID_FILE,
-                ex.getMessage(),
-                getCurrentTimestamp()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-    
-    @ExceptionHandler(InvalidFileNameException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleInvalidFileNameException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                ErrorCode.INVALID_FILENAME,
-                ex.getMessage(),
-                getCurrentTimestamp()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-    
-    @ExceptionHandler(ConversionFailedException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleConversionFailedException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                ErrorCode.CONVERSION_ERROR,
-                ex.getMessage(),
-                getCurrentTimestamp()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    
     @ExceptionHandler(InvalidActionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleInvalidActionException(Exception ex) {

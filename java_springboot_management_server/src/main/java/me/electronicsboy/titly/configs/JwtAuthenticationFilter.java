@@ -1,15 +1,11 @@
 package me.electronicsboy.titly.configs;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import org.springframework.lang.NonNull;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,7 +18,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me.electronicsboy.titly.data.DeviceType;
 import me.electronicsboy.titly.exceptions.InvalidJWTException;
 import me.electronicsboy.titly.models.User;
 import me.electronicsboy.titly.services.InvalidatedJWTService;
@@ -73,55 +68,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userName != null && authentication == null) {
-                if (jwtService.isTokenValid(jwt)) {
-                	if(jwtService.getDeviceType(jwt) == DeviceType.DEVICE || jwtService.getDeviceType(jwt) == DeviceType.PREAUTH_DEVICE) {
-                		if(!path.startsWith("/device/"))
-                			throw new AccessDeniedException("Devices can access only device endpoints!");
-                		
-                		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                new UserDetails() {
-									private static final long serialVersionUID = 2866442390994513418L;
+                if (jwtService.isTokenValid(jwt)) {	
+            		UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
+            		
+            		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
 
-									@Override
-									public String getUsername() {
-										return userName;
-									}
-									
-									@Override
-									public String getPassword() {
-										return jwt;
-									}
-									
-									@Override
-									public Collection<? extends GrantedAuthority> getAuthorities() {
-										return new ArrayList<>();
-									}
-								},
-                                null,
-                                new ArrayList<>()
-                        );
-
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                	}
-                	if(jwtService.getDeviceType(jwt) == DeviceType.USER) {
-                		if(path.startsWith("/device/"))
-                			throw new AccessDeniedException("Users cannot access device endpoints!");
-                		
-                		UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
-                		
-                		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                        if(!((User) authToken.getPrincipal()).isEnabled())
-                        	throw new DisabledException("User account is disabled");
-                	}
-                }
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    if(!((User) authToken.getPrincipal()).isEnabled())
+                    	throw new DisabledException("User account is disabled");
+            	}
             }
 
             filterChain.doFilter(request, response);

@@ -46,7 +46,7 @@ public class SecurityConfiguration {
     	.and()
         .csrf().disable()
         .authorizeHttpRequests()
-            .requestMatchers("/pages/**", "/index.html", "/style.css", "/common.js", "/components/**", "/", "/vendor/**", "/userauth/**").permitAll()
+            .requestMatchers("/userauth/**").permitAll()
             .anyRequest().authenticated()
 //            .anyRequest().permitAll()
         .and()

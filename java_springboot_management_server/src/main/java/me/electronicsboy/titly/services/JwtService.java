@@ -15,7 +15,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import me.electronicsboy.titly.data.DeviceType;
 
 @Service
 public class JwtService {
@@ -51,23 +50,6 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
-    	extraClaims.put("deviceType", DeviceType.USER.name());
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-    
-    public String buildDeviceToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails,
-            long expiration, DeviceType type
-    ) {
-    	extraClaims.put("deviceType", type.name());
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -80,10 +62,6 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         return !isTokenExpired(token);
-    }
-    
-    public DeviceType getDeviceType(String token) {
-    	return extractClaim(token, claims -> DeviceType.valueOf(claims.get("deviceType", String.class)));
     }
 
     public boolean isTokenExpired(String token) {

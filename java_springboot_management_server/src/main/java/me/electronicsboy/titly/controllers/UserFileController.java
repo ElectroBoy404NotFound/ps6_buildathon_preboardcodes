@@ -1,6 +1,5 @@
 package me.electronicsboy.titly.controllers;
 
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
