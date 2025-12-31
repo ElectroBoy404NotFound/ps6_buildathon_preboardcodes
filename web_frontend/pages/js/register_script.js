@@ -122,5 +122,5 @@ async function onRegister() {
     localStorage.setItem("loggedin", true);
     localStorage.setItem("user", JSON.stringify(userinfo));
 
-    location.reload();
+    window.location.reload();
 }
