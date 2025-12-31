@@ -67,7 +67,7 @@ public class UserFileController {
 
     			    ResponseEntity<Resource> pythonResponse =
     			            restTemplate.exchange(
-    			                    "http://192.168.1.14:5000/download_file/" + hash,
+    			                    "http://127.0.0.1:5000/download_file/" + hash,
     			                    HttpMethod.GET,
     			                    null,
     			                    Resource.class
@@ -144,7 +144,7 @@ public class UserFileController {
 
             // 4. Send POST request to Python backend
             RestTemplate restTemplate = new RestTemplate();
-            String pythonUrl = "http://192.168.1.14:5000/upload_file"; // adjust port if needed
+            String pythonUrl = "http://127.0.0.1:5000/upload_file"; // adjust port if needed
             ResponseEntity<String> response = restTemplate.postForEntity(pythonUrl, requestEntity, String.class);
 
             ObjectMapper mapper = new ObjectMapper();

@@ -31,7 +31,7 @@ model = WhisperModel("small")
 
 db_init()
 
-subtitle_status_report_url = "http://192.168.1.12:8087/userauth/donesubtitling/"
+subtitle_status_report_url = "http://127.0.0.1:8087/userauth/donesubtitling/"
 
 # TODO Document this function
 # TODO Replace file path from string manipulation to os.path
