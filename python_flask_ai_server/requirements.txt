@@ -1,0 +1,7 @@
+ffmpeg-python
+mysql-connector-python
+moviepy
+faster-whisper
+requests
+flask
+werkzeug
