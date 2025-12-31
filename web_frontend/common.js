@@ -2,10 +2,10 @@ const protocol = window.location.protocol;
 const hostname = window.location.hostname;
 
 // For development
-const serverport = 8087;
+// const serverport = 8087;
 
 // For production
-// const serverport = window.location.port || (protocol === "https:" ? 443 : 80);
+const serverport = (window.location.port || (protocol === "https:" ? 443 : 80)) + "/api";
 
 // Auth Server
 const APIENDPOINT_LOGIN = `${protocol}//${hostname}:${serverport}/userauth/login`;
@@ -23,15 +23,9 @@ const APIENDPOINT_DOWNLOADFILES = `${protocol}//${hostname}:${serverport}/files/
 
 const APIENDPOINT_USERINFOBYID = `${protocol}//${hostname}:${serverport}/info/users/getById/`;
 const APIENDPOINT_USERINFOUPDATE = `${protocol}//${hostname}:${serverport}/update/user/update`;
-const APIENDPOINT_UNAPPROVEDUSERS = `${protocol}//${hostname}:${serverport}/admin/users/getUnapprovedUsers`;
-const APIENDPOINT_ADMINAPPROVEUSER = `${protocol}//${hostname}:${serverport}/admin/users/approveUser/`;
-const APIENDPOINT_ADMINREJECTUSER = `${protocol}//${hostname}:${serverport}/admin/users/rejectUser/`;
 const APIENDPOINT_ADMINEDITUSER = `${protocol}//${hostname}:${serverport}/admin/users/update`;
 const APIENDPOINT_USERSLIST = `${protocol}//${hostname}:${serverport}/admin/users/list`;
 const APIENDPOINT_DELETEUSER = `${protocol}//${hostname}:${serverport}/admin/users/delete/`;
-const APIENDPOINT_VIDEOPLAYBACK = `${protocol}//${hostname}:${serverport}/files/video/`;
-const APIENDPOINT_GETFILE = `${protocol}//${hostname}:${serverport}/files/getFile/`;
-const APIENDPOINT_DELETEFILE = `${protocol}//${hostname}:${serverport}/admin/files/delete/`;
 const APIENDPOINT_UPLOADFILE = `${protocol}//${hostname}:${serverport}/files/upload`;
 
 const privilage_level_dict = {

@@ -94,20 +94,33 @@ async function onRegister() {
     }
 
     document.getElementById("reg_button").disabled = true;
-    regtoastContent.innerHTML = "Registering...";
+    showToast("Registering...");
 
     const result = await createUser(email, password, firstName + " " + lastName, username, location);
     if("error" in result) {
         switch(result.error) {
             case 1002:
-                regtoastContent.innerHTML = "Username/Email already in use!";
+                showToast("Username/Email already in use!");
                 break;
             default:
-                regtoastContent.innerHTML = `Unknown error ${result.error} has occured!`;
+                showToast(`Unknown error ${result.error} has occured!`);
         }
         document.getElementById("reg_button").disabled = false;
         return;
     }
 
-    regtoastContent.innerHTML = "Registered! Please wait for an email ";
+    showToast("Registered! Redirecting to the dashboard...");
+
+    var login_response = await loginUser(email, password);
+
+    const token = login_response["token"];
+    const refreshtoken = login_response["refreshToken"];
+    const userinfo = await getUserInfo(token);
+
+    localStorage.setItem("usertoken", token);
+    localStorage.setItem("userrefreshtoken", refreshtoken);
+    localStorage.setItem("loggedin", true);
+    localStorage.setItem("user", JSON.stringify(userinfo));
+
+    location.reload();
 }
